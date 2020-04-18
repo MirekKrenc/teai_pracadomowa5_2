@@ -11,9 +11,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 //lista miast dla ktorych jest mozliwosc pobrania aktualnej i progozowanej pogody
-//@Service
+@Service
 public class CountriesAndCapitolsInEurope {
 
+    //url prowadzacy do europejskich danych
     private final String URL = "https://www.metaweather.com/24865675/";
 
     private Map<String, String> citiesUrlMap;

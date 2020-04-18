@@ -188,7 +188,7 @@ public class WeatherServiceWOEID {
     private RestTemplate restTemplate;
     private final String API ="https://www.metaweather.com/api/location";
 
-    public String getWheatherData(String url)
+    public Weather getWheatherData(String url)
     {
         restTemplate = new RestTemplate();
         String URL = API + url;
@@ -198,8 +198,8 @@ public class WeatherServiceWOEID {
 
         System.out.println("HUMIDITY=" + weather.getConsolidatedWeather()[0].getHumidity());
         System.out.println("MAX TEMP=" + weather.getConsolidatedWeather()[0].getMaxTemp());
-        System.out.println("MAX TEMP=" + weather.getConsolidatedWeather()[0].getWeatherStateAbbr());
+        System.out.println("STATE=" + weather.getConsolidatedWeather()[0].getWeatherStateAbbr());
 
-        return result;
+        return weather;
     }
 }

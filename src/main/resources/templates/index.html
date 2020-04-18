@@ -2,17 +2,46 @@
 <html lang="en" xmlns:th = "http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Opis pogody w wybranych miastach Europy</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 </head>
+<div class="card-header">
+    <h1>Dane pogodowe w wybranych miastach EUROPY</h1>
+</div>
 
+<div>
 <form action ="/" th:object="${wybrane}" method="post">
 <select th:field="*{name}">
-    <option value="">Wybierz miasto</option>
+    <option value="">Wybierz miasto z listy</option>
     <option th:each="miasto: ${miasta}" th:value="${miasto.name}" th:text="${miasto.name}"></option>
 </select>
 
-<input type="submit" value="Dalej!"/>
+<input type="submit" value="Pokaż dane pogodowe"/>
 </form>
+</div>
 
+<div th:if="${pogoda} != null">
+<!--<p th:text="${#httpServletRequest.getParameter('maxtemp')}">POGODA</p>-->
+    <div>
+        <h2 th:text="${metadata.getTitle()}"></h2>
+    </div>
+    <div class="card" style="width: 25rem;">
+        <img class="card-img-top" th:src="@{'https://www.metaweather.com/static/img/weather/png/' + ${pogoda.getWeatherStateAbbr()} + '.png'}" />
+        <div class="card-body">
+            <h5 class="card-title">Pogoda dzisiejsza</h5>
+            <p th:text="${metadata.getTime()}"></p>
+        </div>
+        <ul class="list-group list-group-flush">
+            <li th:text="'Temperatura minimalna: ' + ${pogoda.getMinTemp()} + ' stopni Celsjusza'" class="list-group-item"></li>
+            <li th:text="'Temperatura maksymalna: ' + ${pogoda.getMaxTemp()} + ' stopni Celsjusza'" class="list-group-item"></li>
+            <li th:text="'Ciśnienie powietrza: ' + ${pogoda.getAirPressure()} + ' hPa'" class="list-group-item"></li>
+            <li th:text="'Wilgotność: ' + ${pogoda.getHumidity()} + '%'" class="list-group-item"></li>
+        </ul>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 </body>
 </html>

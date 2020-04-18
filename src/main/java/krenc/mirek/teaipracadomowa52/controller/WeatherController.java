@@ -1,13 +1,20 @@
 package krenc.mirek.teaipracadomowa52.controller;
 
+import krenc.mirek.teaipracadomowa52.model.ConsolidatedWeather;
+import krenc.mirek.teaipracadomowa52.model.Weather;
+import krenc.mirek.teaipracadomowa52.service.CountriesAndCapitolsInEurope;
 import krenc.mirek.teaipracadomowa52.service.WeatherServiceWOEID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.view.RedirectView;
 
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,44 +23,72 @@ import java.util.stream.Collectors;
 public class WeatherController {
 
     private List<City> urlsCities;
+    private CountriesAndCapitolsInEurope countriesAndCapitolsInEurope;
     private WeatherServiceWOEID weatherServiceWOEID;
+    private static DecimalFormat df2 = new DecimalFormat("#.##");
 
-    public WeatherController(WeatherServiceWOEID weatherServiceWOEID) {
+    @Autowired
+    public WeatherController(WeatherServiceWOEID weatherServiceWOEID, CountriesAndCapitolsInEurope countriesAndCapitolsInEurope) {
         this.weatherServiceWOEID = weatherServiceWOEID;
+        this.countriesAndCapitolsInEurope = countriesAndCapitolsInEurope;
         this.urlsCities = new ArrayList<>();
-        urlsCities.add(new City("/523920", "Warsaw"));
-        urlsCities.add(new City("/551801", "Vienna"));
-        urlsCities.add(new City("/638242", "Berlin"));
+        for (Map.Entry<String,String> map: countriesAndCapitolsInEurope.getCitiesUrlMap().entrySet())
+        {
+            //key = url, value= name
+            if (map.getValue().toLowerCase().equals("england"))
+                continue;
+            urlsCities.add(new City(map.getKey(), map.getValue()));
+        }
+
+        Collections.sort(urlsCities);
+
+//        urlsCities.add(new City("/523920", "Warsaw"));
+//        urlsCities.add(new City("/551801", "Vienna"));
+//        urlsCities.add(new City("/638242", "Berlin"));
     }
 
     @GetMapping
-    public String goToStart(Model model)
+    public String goToStartSession(Model model, HttpSession session)
     {
-
         model.addAttribute("miasta", urlsCities);
         model.addAttribute("wybrane", new City());
+        //session.setAttribute("weatherAttr", new Weather());
+        Weather weather = (Weather) session.getAttribute("weatherAttr");
+        ConsolidatedWeather consolidatedWeather = (ConsolidatedWeather) session.getAttribute("consolidatedWeatherAttr");
+        model.addAttribute("metadata", weather);
+        model.addAttribute("pogoda", consolidatedWeather);
         return "index";
     }
 
     @PostMapping
-    public String showWeather(City city)
+    public String showWeatherSession(City city, Model model, HttpSession session)
     {
+        if (city == null)
+        {
+            return "error";
+        }
         System.out.println(city.getName());
         String URL = urlsCities.stream()
                 .filter(c -> c.getName().equals(city.getName()))
                 .findFirst().get().getUrl();
 
-        String json = weatherServiceWOEID.getWheatherData(URL);
-        System.out.println(json);
-
+        Weather json = weatherServiceWOEID.getWheatherData(URL);
+        String minTemp = df2.format(json.getConsolidatedWeather()[0].getMinTemp());
+        json.getConsolidatedWeather()[0].setMinTemp(Double.parseDouble(minTemp));
+        String maxTemp = df2.format(json.getConsolidatedWeather()[0].getMaxTemp());
+        json.getConsolidatedWeather()[0].setMaxTemp(Double.parseDouble(maxTemp));
+        //System.out.println(json);
         //obrazek https://www.metaweather.com/static/img/weather/png/hr.png
         //lub ikona https://www.metaweather.com/static/img/weather/png/64/hr.png
         //zalezna od "weather_state_abbr": "hc"
+        RedirectView redirectView = new RedirectView("/", true);
+        session.setAttribute("weatherAttr", json);
+        session.setAttribute("consolidatedWeatherAttr", json.getConsolidatedWeather()[0]);
         return "redirect:/";
     }
 }
 
-class City {
+class City implements Comparable<City>{
     private String name;
 
     public String getUrl() {
@@ -80,5 +115,9 @@ class City {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int compareTo(City o) {
+        return this.getName().compareTo(o.getName());
     }
 }
