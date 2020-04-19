@@ -43,12 +43,13 @@ public class CountriesAndCapitolsInEurope {
         {
             //tworze URL
             String URL = mainAPI + map.getKey();
-            //wchodze na URL i pobieram miasto oraz jego id
+            //wchodze na URL i pobieram miasto oraz jego id parsując HTML
             Document document = Jsoup.connect(URL).get();
             Elements citiLocation = document.body().getElementsByClass("col-lg-4 col-md-4 col-sm-4");
             Document citiDocument = Jsoup.parse(citiLocation.html());
             String link = citiDocument.select("a").attr("href");
             String[] city = citiDocument.select("a").text().split("\\s");
+            //jest wiecej miast w danym kraju, biorę pierwsze z listy
             urlCity.put(link, city[0]);
             //System.out.println(link + " -> " + city[0]);
         }

@@ -67,24 +67,26 @@ public class WeatherController {
         {
             return "error";
         }
-        System.out.println(city.getName());
+        Weather jsonWeatherData = getWeather(city);
+        //obrazek https://www.metaweather.com/static/img/weather/png/hr.png
+        //zalezna od "weather_state_abbr": "hc"
+        RedirectView redirectView = new RedirectView("/", true);
+        session.setAttribute("weatherAttr", jsonWeatherData);
+        session.setAttribute("consolidatedWeatherAttr", jsonWeatherData.getConsolidatedWeather()[0]);
+        return "redirect:/";
+    }
+
+    private Weather getWeather(City city) {
         String URL = urlsCities.stream()
                 .filter(c -> c.getName().equals(city.getName()))
                 .findFirst().get().getUrl();
 
-        Weather json = weatherServiceWOEID.getWheatherData(URL);
-        String minTemp = df2.format(json.getConsolidatedWeather()[0].getMinTemp());
-        json.getConsolidatedWeather()[0].setMinTemp(Double.parseDouble(minTemp));
-        String maxTemp = df2.format(json.getConsolidatedWeather()[0].getMaxTemp());
-        json.getConsolidatedWeather()[0].setMaxTemp(Double.parseDouble(maxTemp));
-        //System.out.println(json);
-        //obrazek https://www.metaweather.com/static/img/weather/png/hr.png
-        //lub ikona https://www.metaweather.com/static/img/weather/png/64/hr.png
-        //zalezna od "weather_state_abbr": "hc"
-        RedirectView redirectView = new RedirectView("/", true);
-        session.setAttribute("weatherAttr", json);
-        session.setAttribute("consolidatedWeatherAttr", json.getConsolidatedWeather()[0]);
-        return "redirect:/";
+        Weather jsonWeatherData = weatherServiceWOEID.getWheatherData(URL);
+        String minTemp = df2.format(jsonWeatherData.getConsolidatedWeather()[0].getMinTemp());
+        jsonWeatherData.getConsolidatedWeather()[0].setMinTemp(Double.parseDouble(minTemp));
+        String maxTemp = df2.format(jsonWeatherData.getConsolidatedWeather()[0].getMaxTemp());
+        jsonWeatherData.getConsolidatedWeather()[0].setMaxTemp(Double.parseDouble(maxTemp));
+        return jsonWeatherData;
     }
 }
 
